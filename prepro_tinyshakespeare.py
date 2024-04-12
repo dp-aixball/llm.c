@@ -17,6 +17,8 @@ streams of int32 numbers indicating the token ids.
 import os
 import requests
 from tqdm import tqdm
+from urllib.parse import urlparse
+import shutil
 
 import tiktoken
 import numpy as np
@@ -46,10 +48,16 @@ def download():
 
     # download the TinyStories dataset, unless it's already downloaded
     data_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+    data_url = "https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt"
+    data_url = "file://"+ os.getcwd() + "/input.txt"
     data_filename = os.path.join(DATA_CACHE_DIR, "tiny_shakespeare.txt")
     if not os.path.exists(data_filename):
         print(f"Downloading {data_url} to {data_filename}...")
-        download_file(data_url, data_filename)
+        if data_url.startswith("file://"):
+            shutil.copy2(os.path.abspath(urlparse(data_url).path), data_filename)
+            pass
+        else:
+            download_file(data_url, data_filename)
     else:
         print(f"{data_filename} already exists, skipping download...")
 

@@ -135,7 +135,7 @@ class GPT(nn.Module):
         return logits, loss
 
     @classmethod
-    def from_pretrained(cls, model_type):
+    def from_pretrained(cls, model_type, model_dir=None):
         """Loads pretrained GPT-2 model weights from huggingface"""
         assert model_type in {'gpt2', 'gpt2-medium', 'gpt2-large', 'gpt2-xl'}
         from transformers import GPT2LMHeadModel
@@ -158,7 +158,10 @@ class GPT(nn.Module):
         sd_keys = [k for k in sd_keys if not k.endswith('.attn.bias')] # discard this mask / buffer, not a param
 
         # init a huggingface/transformers model
-        model_hf = GPT2LMHeadModel.from_pretrained(model_type)
+        if model_dir is None:
+            model_hf = GPT2LMHeadModel.from_pretrained(model_type)
+        else:
+            model_hf = GPT2LMHeadModel.from_pretrained(model_dir)
         sd_hf = model_hf.state_dict()
 
         # copy while ensuring all of the parameters are aligned and match in names and shapes
@@ -334,7 +337,8 @@ if __name__ == "__main__":
         torch.set_float32_matmul_precision('high')
 
     # load the GPT-2 model weights
-    model = GPT.from_pretrained("gpt2")
+    # model = GPT.from_pretrained("gpt2")
+    model = GPT.from_pretrained("gpt2", "/media/zhyi/RAID/BigModel/gpt-2")
     model.train()
     model.to(device)
     if args.compile:
